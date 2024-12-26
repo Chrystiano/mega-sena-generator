@@ -297,4 +297,5 @@ if st.session_state.jogos_referencia and st.session_state["multiplicador"]:
     jogos_referencia = st.session_state.jogos_referencia
 
     total_jogos = len(jogos_referencia) * multiplicador_valor
-    num_jogos_b = int(total_jogos * 0.75) - len(jogos_referenci
+    num_jogos_b = int(total_jogos * 0.75) - len(jogos_referencia)  # Linha corrigida
+    num_jogos_c = total_jogos - len(jogos_referencia) - num_jogos_b
