@@ -4,7 +4,7 @@ Mega-Sena Generator - Gerador Inteligente de Combinações para Mega-Sena
 
 Este módulo implementa um gerador inteligente de combinações para a Mega-Sena usando
 o framework Streamlit. O sistema gera combinações baseadas em jogos de referência,
-seguindo regras específicas de distribuição de números e garantindo que não haja duplicações.
+seguindo regras específicas de distribuição de números.
 
 Desenvolvido por Chrystiano (https://github.com/Chrystiano)
 Versão: 1.0.0-alpha
@@ -14,7 +14,6 @@ Funcionalidades principais:
     - Processamento de jogos de referência em formato texto
     - Geração de novas combinações usando algoritmos inteligentes
     - Validação automática seguindo regras oficiais da Mega-Sena
-    - Garantia de unicidade em todas as combinações geradas
     - Interface web amigável e responsiva
     - Cálculo automático do custo total da aposta
 """
@@ -94,7 +93,7 @@ class GeradorJogos:
     def adicionar_jogo(self, jogo: Jogo) -> bool:
         """
         Adiciona um jogo ao conjunto de jogos gerados se ele não existir.
-
+        
         Args:
             jogo (Jogo): O jogo a ser adicionado
 
@@ -107,14 +106,14 @@ class GeradorJogos:
         return True
 
     def gerar_combinacao_unica(
-        self,
-        numeros_disponiveis: List[int],
-        tamanho: int = 6,
+        self, 
+        numeros_disponiveis: List[int], 
+        tamanho: int = 6, 
         max_tentativas: int = 1000
     ) -> Optional[Jogo]:
         """
         Gera uma combinação única de números.
-
+        
         Args:
             numeros_disponiveis (List[int]): Lista de números disponíveis para sorteio
             tamanho (int): Quantidade de números em cada combinação
@@ -179,8 +178,8 @@ def gerar_combinacoes_tipo_a(jogos_referencia: List[Jogo], gerador: GeradorJogos
 
 
 def gerar_combinacoes_tipo_b(
-    jogos_referencia: List[Jogo],
-    num_combinacoes: int,
+    jogos_referencia: List[Jogo], 
+    num_combinacoes: int, 
     gerador: GeradorJogos
 ) -> List[Jogo]:
     """
@@ -196,7 +195,7 @@ def gerar_combinacoes_tipo_b(
     """
     combinacoes = []
     numeros_referencia = [n for jogo in jogos_referencia for n in jogo.numeros]
-
+    
     while len(combinacoes) < num_combinacoes:
         jogo = gerador.gerar_combinacao_unica(numeros_referencia)
         if jogo:
@@ -204,13 +203,13 @@ def gerar_combinacoes_tipo_b(
         else:
             st.warning(f"⚠️ Não foi possível gerar mais combinações únicas do tipo B. Geradas {len(combinacoes)} de {num_combinacoes}.")
             break
-
+    
     return combinacoes
 
 
 def gerar_combinacoes_tipo_c(
-    jogos_referencia: List[Jogo],
-    num_combinacoes: int,
+    jogos_referencia: List[Jogo], 
+    num_combinacoes: int, 
     gerador: GeradorJogos
 ) -> List[Jogo]:
     """
@@ -228,23 +227,23 @@ def gerar_combinacoes_tipo_c(
     numeros_referencia = [n for jogo in jogos_referencia for n in jogo.numeros]
     todos_numeros = set(range(1, 61))
     numeros_novos = list(todos_numeros - set(numeros_referencia))
-
+    
     while len(combinacoes) < num_combinacoes:
         base = random.sample(numeros_referencia, random.randint(1, 2))
         novos = random.sample(numeros_novos, 6 - len(base))
         jogo = Jogo(numeros=sorted(base + novos))
-
+        
         try:
             validar_distribuicao(jogo)
             if gerador.adicionar_jogo(jogo):
                 combinacoes.append(jogo)
         except ValueError:
             continue
-
+            
         if len(combinacoes) < num_combinacoes and not novos:
             st.warning(f"⚠️ Não foi possível gerar mais combinações únicas do tipo C. Geradas {len(combinacoes)} de {num_combinacoes}.")
             break
-
+    
     return combinacoes
 
 
@@ -313,8 +312,6 @@ if "multiplicador" not in st.session_state:
     st.session_state["multiplicador"] = None
 if "mensagem_sucesso" not in st.session_state:
     st.session_state["mensagem_sucesso"] = False
-if "reset_multiplicador" not in st.session_state:
-    st.session_state["reset_multiplicador"] = False
 
 # Campo para entrada de dados
 conteudo_colado = st.text_area(
@@ -356,9 +353,6 @@ if st.session_state.jogos_referencia:
     # Indicador visual do multiplicador selecionado
     if st.session_state["multiplicador"]:
         st.write(f"Multiplicador selecionado: {st.session_state['multiplicador']}x")
-        if st.button("Resetar Multiplicador", key="reset_mult"):
-            st.session_state["multiplicador"] = None
-            st.experimental_rerun()
 
 # Geração e exibição das combinações
 if st.session_state.jogos_referencia and st.session_state["multiplicador"]:
@@ -377,10 +371,10 @@ if st.session_state.jogos_referencia and st.session_state["multiplicador"]:
 
     # Verifica o total de jogos gerados
     todos_jogos = combinacoes_a + combinacoes_b + combinacoes_c
-
+    
     if len(todos_jogos) < total_jogos:
         st.warning(f"⚠️ Foram gerados {len(todos_jogos)} jogos únicos dos {total_jogos} solicitados.")
-
+    
     # Exibe as combinações do Tipo A
     st.subheader("🎯 Jogos Tipo A (Originais)")
     st.markdown("Jogos fornecidos diretamente pelos participantes.")
