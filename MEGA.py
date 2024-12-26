@@ -332,4 +332,42 @@ if st.session_state.jogos_referencia and st.session_state["multiplicador"]:
 
     # Exibe as combinações do Tipo C
     st.subheader("🎯 Jogos Tipo C (25%)")
-    st.markdown("Combinações exploratórias com novos números
+    st.markdown("Combinações exploratórias com novos números.")
+    col1, col2, col3 = st.columns(3)
+    for i, jogo in enumerate(combinacoes_c):
+        with [col1, col2, col3][i % 3]:
+            st.write(" ".join(map(lambda x: f"{x:02}", jogo.numeros)))
+
+    # Exibe o custo total
+    total_custo = total_jogos * 5
+    st.markdown(f"**💰 Custo Total da Aposta: R$ {total_custo},00**")
+
+    # Gera arquivo com todos os jogos
+    all_games = []
+    
+    # Adiciona jogos tipo A com nomes
+    for jogo in combinacoes_a:
+        all_games.append(f"{' '.join(map(lambda x: f'{x:02}', jogo.numeros))} ({jogo.nome})")
+    
+    # Adiciona jogos tipo B
+    for jogo in combinacoes_b:
+        all_games.append(f"{' '.join(map(lambda x: f'{x:02}', jogo.numeros))}")
+    
+    # Adiciona jogos tipo C
+    for jogo in combinacoes_c:
+        all_games.append(f"{' '.join(map(lambda x: f'{x:02}', jogo.numeros))}")
+
+    # Cria o conteúdo do arquivo
+    file_content = "\n".join(all_games)
+
+    # Botão de download
+    st.download_button(
+        label="📥 Baixar Todos os Jogos",
+        data=file_content,
+        file_name="mega_sena_jogos.txt",
+        mime="text/plain",
+        key="download_button"
+    )
+
+    if st.session_state.mensagem_sucesso:
+        st.success("✅ Arquivo gerado com sucesso! Boa sorte e que os números estejam ao seu favor! 🍀🎉")
