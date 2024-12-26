@@ -345,19 +345,11 @@ if st.session_state.jogos_referencia and st.session_state["multiplicador"]:
     # Gera arquivo com todos os jogos
     all_games = []
     
-    # Adiciona jogos tipo A com nomes
-    for jogo in combinacoes_a:
-        all_games.append(f"{' '.join(map(lambda x: f'{x:02}', jogo.numeros))} ({jogo.nome})")
-    
-    # Adiciona jogos tipo B
-    for jogo in combinacoes_b:
-        all_games.append(f"{' '.join(map(lambda x: f'{x:02}', jogo.numeros))}")
-    
-    # Adiciona jogos tipo C
-    for jogo in combinacoes_c:
-        all_games.append(f"{' '.join(map(lambda x: f'{x:02}', jogo.numeros))}")
+    # Adiciona apenas os números dos jogos (tipo A, B e C)
+    for jogo in combinacoes_a + combinacoes_b + combinacoes_c:
+        all_games.append(" ".join(map(lambda x: f"{x:02}", jogo.numeros)))
 
-    # Cria o conteúdo do arquivo
+    # Cria o conteúdo do arquivo (apenas números)
     file_content = "\n".join(all_games)
 
     # Botão de download
