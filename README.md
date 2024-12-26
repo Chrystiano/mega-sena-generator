@@ -34,8 +34,6 @@
 
 ## 🎥 Demonstração
 
-_(Se possível, inclua um GIF ou imagem da aplicação funcionando)_
-
 ## 🎮 Como Usar
 
 1. **Prepare seus Jogos de Referência**
