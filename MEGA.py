@@ -253,6 +253,8 @@ if "multiplicador" not in st.session_state:
     st.session_state["multiplicador"] = None
 if "mensagem_sucesso" not in st.session_state:
     st.session_state["mensagem_sucesso"] = False
+if "reset_multiplicador" not in st.session_state:
+    st.session_state["reset_multiplicador"] = False
 
 # Campo para entrada de dados
 conteudo_colado = st.text_area(
@@ -276,20 +278,27 @@ if st.session_state.jogos_referencia:
     st.subheader("Selecione o multiplicador de jogos:")
     col1, col2, col3, col4, col5 = st.columns(5)
     with col1:
-        if st.button("1x"):
+        if st.button("1x", key="mult_1x"):
             st.session_state["multiplicador"] = 1
     with col2:
-        if st.button("2x"):
+        if st.button("2x", key="mult_2x"):
             st.session_state["multiplicador"] = 2
     with col3:
-        if st.button("3x"):
+        if st.button("3x", key="mult_3x"):
             st.session_state["multiplicador"] = 3
     with col4:
-        if st.button("4x"):
+        if st.button("4x", key="mult_4x"):
             st.session_state["multiplicador"] = 4
     with col5:
-        if st.button("5x"):
+        if st.button("5x", key="mult_5x"):
             st.session_state["multiplicador"] = 5
+
+    # Indicador visual do multiplicador selecionado
+    if st.session_state["multiplicador"]:
+        st.write(f"Multiplicador selecionado: {st.session_state['multiplicador']}x")
+        if st.button("Resetar Multiplicador", key="reset_mult"):
+            st.session_state["multiplicador"] = None
+            st.experimental_rerun()
 
 # Geração e exibição das combinações
 if st.session_state.jogos_referencia and st.session_state["multiplicador"]:
@@ -297,5 +306,30 @@ if st.session_state.jogos_referencia and st.session_state["multiplicador"]:
     jogos_referencia = st.session_state.jogos_referencia
 
     total_jogos = len(jogos_referencia) * multiplicador_valor
-    num_jogos_b = int(total_jogos * 0.75) - len(jogos_referencia)  # Linha corrigida
+    num_jogos_b = int(total_jogos * 0.75) - len(jogos_referencia)
     num_jogos_c = total_jogos - len(jogos_referencia) - num_jogos_b
+
+    # Gera as combinações
+    combinacoes_a = gerar_combinacoes_tipo_a(jogos_referencia)
+    combinacoes_b = gerar_combinacoes_tipo_b(jogos_referencia, num_jogos_b)
+    combinacoes_c = gerar_combinacoes_tipo_c(jogos_referencia, num_jogos_c)
+
+    # Exibe as combinações do Tipo A
+    st.subheader("🎯 Jogos Tipo A (Originais)")
+    st.markdown("Jogos fornecidos diretamente pelos participantes.")
+    col1, col2, col3 = st.columns(3)
+    for i, jogo in enumerate(combinacoes_a):
+        with [col1, col2, col3][i % 3]:
+            st.write(f"{jogo.nome}: " + " ".join(map(lambda x: f"{x:02}", jogo.numeros)))
+
+    # Exibe as combinações do Tipo B
+    st.subheader("🎯 Jogos Tipo B (75%)")
+    st.markdown("Combinações geradas com base nos jogos de referência.")
+    col1, col2, col3 = st.columns(3)
+    for i, jogo in enumerate(combinacoes_b):
+        with [col1, col2, col3][i % 3]:
+            st.write(" ".join(map(lambda x: f"{x:02}", jogo.numeros)))
+
+    # Exibe as combinações do Tipo C
+    st.subheader("🎯 Jogos Tipo C (25%)")
+    st.markdown("Combinações exploratórias com novos números
