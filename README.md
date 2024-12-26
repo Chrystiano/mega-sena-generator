@@ -117,4 +117,4 @@ Link do Projeto: [https://github.com/Chrystiano/mega-sena-generator](https://git
 
 ---
 
-⌨️ com 💙 por [Chrystiano](https://github.com/Chrystiano)
+⌨️ com 💙 por [Chrys](https://github.com/Chrystiano)
