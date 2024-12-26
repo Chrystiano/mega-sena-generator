@@ -4,7 +4,7 @@ Mega-Sena Generator - Gerador Inteligente de Combinações para Mega-Sena
 
 Este módulo implementa um gerador inteligente de combinações para a Mega-Sena usando
 o framework Streamlit. O sistema gera combinações baseadas em jogos de referência,
-seguindo regras específicas de distribuição de números.
+seguindo regras específicas de distribuição de números e garantindo que não haja duplicações.
 
 Desenvolvido por Chrystiano (https://github.com/Chrystiano)
 Versão: 1.0.0-alpha
@@ -14,20 +14,15 @@ Funcionalidades principais:
     - Processamento de jogos de referência em formato texto
     - Geração de novas combinações usando algoritmos inteligentes
     - Validação automática seguindo regras oficiais da Mega-Sena
+    - Garantia de unicidade em todas as combinações geradas
     - Interface web amigável e responsiva
     - Cálculo automático do custo total da aposta
-
-Requerimentos:
-    - Python 3.11 ou superior
-    - Streamlit >= 1.28.0
-    - python-dateutil >= 2.8.2
-    - typing >= 3.7.4
 """
 
 import streamlit as st
 import random
 from datetime import datetime
-from typing import List, Dict
+from typing import List, Dict, Optional, Set
 from collections import Counter
 import re
 
@@ -38,6 +33,7 @@ class Jogo:
 
     Esta classe mantém as informações de um jogo individual, incluindo os números
     escolhidos, identificador único, nome do apostador e metadados adicionais.
+    Implementa as funções necessárias para comparação e uso em estruturas de dados.
 
     Atributos:
         id (str): Identificador único do jogo (timestamp + número aleatório)
@@ -46,11 +42,6 @@ class Jogo:
         timestamp (datetime): Data e hora da criação do jogo
         metadata (Dict): Dicionário com metadados adicionais do jogo
         metricas (Dict): Dicionário com métricas calculadas do jogo
-
-    Args:
-        numeros (List[int]): Lista com os 6 números escolhidos
-        nome (str, opcional): Nome do apostador. Padrão é string vazia
-        metadata (Dict, opcional): Metadados adicionais. Padrão é None
     """
 
     def __init__(self, numeros: List[int], nome: str = "", metadata: Dict = None):
@@ -61,17 +52,22 @@ class Jogo:
         self.metadata = metadata or {}
         self.metricas = {}
 
+    def __hash__(self):
+        """Permite uso do objeto em sets e como chave em dicionários."""
+        return hash(tuple(self.numeros))
+
+    def __eq__(self, other):
+        """Define quando dois jogos são considerados iguais."""
+        if not isinstance(other, Jogo):
+            return False
+        return set(self.numeros) == set(other.numeros)
+
     def validar(self):
         """
         Valida se o jogo está de acordo com as regras básicas da Mega-Sena.
 
-        Verifica:
-            - Se possui exatamente 6 números
-            - Se todos os números estão entre 1 e 60
-            - Se não há números repetidos
-
         Raises:
-            ValueError: Se alguma das regras for violada
+            ValueError: Se alguma regra básica for violada
         """
         if len(self.numeros) != 6:
             raise ValueError("Um jogo deve conter exatamente 6 números.")
@@ -81,15 +77,69 @@ class Jogo:
             raise ValueError("Os números de um jogo não podem se repetir.")
 
 
+class GeradorJogos:
+    """
+    Classe para gerenciar a geração de jogos únicos.
+
+    Esta classe mantém controle de todos os jogos gerados e fornece métodos
+    para garantir a unicidade das combinações.
+
+    Attributes:
+        jogos_gerados (Set[Jogo]): Conjunto de todos os jogos já gerados
+    """
+
+    def __init__(self):
+        self.jogos_gerados: Set[Jogo] = set()
+
+    def adicionar_jogo(self, jogo: Jogo) -> bool:
+        """
+        Adiciona um jogo ao conjunto de jogos gerados se ele não existir.
+
+        Args:
+            jogo (Jogo): O jogo a ser adicionado
+
+        Returns:
+            bool: True se o jogo foi adicionado, False se já existia
+        """
+        if jogo in self.jogos_gerados:
+            return False
+        self.jogos_gerados.add(jogo)
+        return True
+
+    def gerar_combinacao_unica(
+        self,
+        numeros_disponiveis: List[int],
+        tamanho: int = 6,
+        max_tentativas: int = 1000
+    ) -> Optional[Jogo]:
+        """
+        Gera uma combinação única de números.
+
+        Args:
+            numeros_disponiveis (List[int]): Lista de números disponíveis para sorteio
+            tamanho (int): Quantidade de números em cada combinação
+            max_tentativas (int): Número máximo de tentativas antes de desistir
+
+        Returns:
+            Optional[Jogo]: Novo jogo único ou None se não for possível gerar
+        """
+        tentativas = 0
+        while tentativas < max_tentativas:
+            combinacao = sorted(random.sample(numeros_disponiveis, tamanho))
+            jogo = Jogo(numeros=combinacao)
+            try:
+                validar_distribuicao(jogo)
+                if self.adicionar_jogo(jogo):
+                    return jogo
+            except ValueError:
+                pass
+            tentativas += 1
+        return None
+
+
 def validar_distribuicao(jogo: Jogo):
     """
     Valida a distribuição dos números em um jogo seguindo regras específicas.
-
-    Regras verificadas:
-        - Entre 2 e 4 números baixos (1-30)
-        - Entre 2 e 4 números altos (31-60)
-        - Máximo de 3 números na mesma dezena
-        - Máximo de 2 números com a mesma terminação
 
     Args:
         jogo (Jogo): Objeto Jogo a ser validado
@@ -112,59 +162,64 @@ def validar_distribuicao(jogo: Jogo):
         raise ValueError("Jogo não pode ter mais de 2 números com a mesma terminação.")
 
 
-def gerar_combinacoes_tipo_a(jogos_referencia: List[Jogo]) -> List[Jogo]:
+def gerar_combinacoes_tipo_a(jogos_referencia: List[Jogo], gerador: GeradorJogos) -> List[Jogo]:
     """
-    Retorna os jogos de referência originais sem modificações.
+    Retorna os jogos de referência originais, registrando-os no gerador.
 
     Args:
         jogos_referencia (List[Jogo]): Lista de jogos originais
+        gerador (GeradorJogos): Instância do gerador para controle de unicidade
 
     Returns:
         List[Jogo]: Os mesmos jogos de referência fornecidos
     """
+    for jogo in jogos_referencia:
+        gerador.adicionar_jogo(jogo)
     return jogos_referencia
 
 
-def gerar_combinacoes_tipo_b(jogos_referencia: List[Jogo], num_combinacoes: int) -> List[Jogo]:
+def gerar_combinacoes_tipo_b(
+    jogos_referencia: List[Jogo],
+    num_combinacoes: int,
+    gerador: GeradorJogos
+) -> List[Jogo]:
     """
-    Gera novas combinações usando apenas números dos jogos de referência.
-
-    Esta função representa 75% dos jogos gerados automaticamente, mantendo
-    padrões de distribuição dos jogos originais.
+    Gera combinações tipo B garantindo unicidade.
 
     Args:
         jogos_referencia (List[Jogo]): Lista de jogos originais
         num_combinacoes (int): Quantidade de novas combinações a serem geradas
+        gerador (GeradorJogos): Instância do gerador para controle de unicidade
 
     Returns:
         List[Jogo]: Lista com as novas combinações geradas
     """
     combinacoes = []
     numeros_referencia = [n for jogo in jogos_referencia for n in jogo.numeros]
-    frequencias = Counter(numeros_referencia)
 
     while len(combinacoes) < num_combinacoes:
-        combinacao = sorted(random.sample(numeros_referencia, 6))
-        jogo = Jogo(numeros=combinacao)
-        try:
-            validar_distribuicao(jogo)
+        jogo = gerador.gerar_combinacao_unica(numeros_referencia)
+        if jogo:
             combinacoes.append(jogo)
-        except ValueError:
-            continue
+        else:
+            st.warning(f"⚠️ Não foi possível gerar mais combinações únicas do tipo B. Geradas {len(combinacoes)} de {num_combinacoes}.")
+            break
 
     return combinacoes
 
 
-def gerar_combinacoes_tipo_c(jogos_referencia: List[Jogo], num_combinacoes: int) -> List[Jogo]:
+def gerar_combinacoes_tipo_c(
+    jogos_referencia: List[Jogo],
+    num_combinacoes: int,
+    gerador: GeradorJogos
+) -> List[Jogo]:
     """
-    Gera combinações explorando números que não aparecem nos jogos de referência.
-
-    Esta função representa 25% dos jogos gerados automaticamente, combinando
-    1-2 números dos jogos originais com números novos.
+    Gera combinações tipo C garantindo unicidade.
 
     Args:
         jogos_referencia (List[Jogo]): Lista de jogos originais
         num_combinacoes (int): Quantidade de novas combinações a serem geradas
+        gerador (GeradorJogos): Instância do gerador para controle de unicidade
 
     Returns:
         List[Jogo]: Lista com as novas combinações geradas
@@ -175,15 +230,20 @@ def gerar_combinacoes_tipo_c(jogos_referencia: List[Jogo], num_combinacoes: int)
     numeros_novos = list(todos_numeros - set(numeros_referencia))
 
     while len(combinacoes) < num_combinacoes:
-        base = sorted(random.sample(numeros_referencia, random.randint(1, 2)))
-        novos = sorted(random.sample(numeros_novos, 6 - len(base)))
-        combinacao = sorted(base + novos)
-        jogo = Jogo(numeros=combinacao)
+        base = random.sample(numeros_referencia, random.randint(1, 2))
+        novos = random.sample(numeros_novos, 6 - len(base))
+        jogo = Jogo(numeros=sorted(base + novos))
+
         try:
             validar_distribuicao(jogo)
-            combinacoes.append(jogo)
+            if gerador.adicionar_jogo(jogo):
+                combinacoes.append(jogo)
         except ValueError:
             continue
+
+        if len(combinacoes) < num_combinacoes and not novos:
+            st.warning(f"⚠️ Não foi possível gerar mais combinações únicas do tipo C. Geradas {len(combinacoes)} de {num_combinacoes}.")
+            break
 
     return combinacoes
 
@@ -304,15 +364,22 @@ if st.session_state.jogos_referencia:
 if st.session_state.jogos_referencia and st.session_state["multiplicador"]:
     multiplicador_valor = st.session_state["multiplicador"]
     jogos_referencia = st.session_state.jogos_referencia
+    gerador = GeradorJogos()  # Cria instância única do gerador
 
     total_jogos = len(jogos_referencia) * multiplicador_valor
     num_jogos_b = int(total_jogos * 0.75) - len(jogos_referencia)
     num_jogos_c = total_jogos - len(jogos_referencia) - num_jogos_b
 
-    # Gera as combinações
-    combinacoes_a = gerar_combinacoes_tipo_a(jogos_referencia)
-    combinacoes_b = gerar_combinacoes_tipo_b(jogos_referencia, num_jogos_b)
-    combinacoes_c = gerar_combinacoes_tipo_c(jogos_referencia, num_jogos_c)
+    # Gera as combinações usando o mesmo gerador para garantir unicidade global
+    combinacoes_a = gerar_combinacoes_tipo_a(jogos_referencia, gerador)
+    combinacoes_b = gerar_combinacoes_tipo_b(jogos_referencia, num_jogos_b, gerador)
+    combinacoes_c = gerar_combinacoes_tipo_c(jogos_referencia, num_jogos_c, gerador)
+
+    # Verifica o total de jogos gerados
+    todos_jogos = combinacoes_a + combinacoes_b + combinacoes_c
+
+    if len(todos_jogos) < total_jogos:
+        st.warning(f"⚠️ Foram gerados {len(todos_jogos)} jogos únicos dos {total_jogos} solicitados.")
 
     # Exibe as combinações do Tipo A
     st.subheader("🎯 Jogos Tipo A (Originais)")
@@ -339,17 +406,15 @@ if st.session_state.jogos_referencia and st.session_state["multiplicador"]:
             st.write(" ".join(map(lambda x: f"{x:02}", jogo.numeros)))
 
     # Exibe o custo total
-    total_custo = total_jogos * 5
+    total_custo = len(todos_jogos) * 5
     st.markdown(f"**💰 Custo Total da Aposta: R$ {total_custo},00**")
 
     # Gera arquivo com todos os jogos
     all_games = []
-    
-    # Adiciona apenas os números dos jogos (tipo A, B e C)
-    for jogo in combinacoes_a + combinacoes_b + combinacoes_c:
+    for jogo in todos_jogos:
         all_games.append(" ".join(map(lambda x: f"{x:02}", jogo.numeros)))
 
-    # Cria o conteúdo do arquivo (apenas números)
+    # Cria o conteúdo do arquivo
     file_content = "\n".join(all_games)
 
     # Botão de download
@@ -362,4 +427,4 @@ if st.session_state.jogos_referencia and st.session_state["multiplicador"]:
     )
 
     if st.session_state.mensagem_sucesso:
-        st.success("✅ Arquivo gerado com sucesso! Boa sorte e que os números estejam ao seu favor! 🍀🎉")
+        st.success("✅ Arquivo gerado com sucesso! Boa sorte! 🍀🎉")
