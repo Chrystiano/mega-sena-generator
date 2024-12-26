@@ -1,106 +1,122 @@
-# 🎲 Gerador de Combinações Mega-Sena
+# Gerador de Jogos Mega-Sena 🎲
 
-![Python Package](https://img.shields.io/badge/python-100%25-blue)
-![Version](https://img.shields.io/badge/version-1.0.0--alpha-green)
-![Status](https://img.shields.io/badge/status-development-orange)
+![Python](https://img.shields.io/badge/Python-100%25-14354C.svg?style=flat&logo=python)
+![Streamlit](https://img.shields.io/badge/Streamlit-FF4B4B.svg?style=flat&logo=Streamlit&logoColor=white)
+![Status](https://img.shields.io/badge/Status-Em%20Desenvolvimento-yellow)
+![Versão](https://img.shields.io/badge/Versão-1.0.0--alpha-blue)
+![Licença](https://img.shields.io/badge/Licença-MIT-green)
 
-## Sobre o Projeto
+> Um gerador inteligente de combinações para a Mega-Sena que cria jogos baseados em referências fornecidas, seguindo regras específicas de distribuição e garantindo que não haja duplicações.
 
-> ⚠️ **Status**: Versão 1.0.0alpha - Em desenvolvimento
+## 📚 Índice
 
-Um aplicativo web desenvolvido com Streamlit para gerar combinações inteligentes de apostas na Mega-Sena, baseado em jogos de referência fornecidos pelos usuários.
+- [Funcionalidades](#-funcionalidades)
+- [Demonstração](#-demonstração)
+- [Como Usar](#-como-usar)
+- [Tecnologias](#-tecnologias)
+- [Como Funciona](#-como-funciona)
+- [Contribuindo](#-contribuindo)
+- [Licença](#-licença)
+- [Contato](#-contato)
 
-## 📋 Funcionalidades
+## 🚀 Funcionalidades
 
-- Processamento de jogos de referência em formato texto
-- Geração de novas combinações usando algoritmos inteligentes
-- Validação automática seguindo regras oficiais da Mega-Sena
-- Interface web amigável e responsiva
-- Cálculo automático do custo total da aposta
-- Download das combinações geradas em arquivo texto
+- **Processamento Inteligente**: Analisa jogos de referência para gerar novas combinações
+- **Validação Automática**: Segue as regras oficiais da Mega-Sena
+- **Prevenção de Duplicatas**: Garante que cada combinação seja única
+- **Interface Amigável**: Design intuitivo e responsivo
+- **Distribuição Otimizada**: 
+  - 2-4 números baixos (1-30)
+  - 2-4 números altos (31-60)
+  - Máximo 3 números por dezena
+  - Máximo 2 números com mesma terminação
+- **Exportação Simples**: Download de todas as combinações em formato texto
 
-## 📖 Como Usar
+## 🎥 Demonstração
 
-1. Inicie a aplicação e acesse pelo navegador
-2. Cole seus jogos de referência no formato:
-```
-01 02 03 04 05 06 (Nome)
-07 08 09 10 11 12 (Outro Nome)
-```
-3. Clique em "Processar Dados"
-4. Escolha um multiplicador (1x a 5x)
-5. Visualize as combinações geradas:
-   - Tipo A: Jogos originais
-   - Tipo B: Combinações baseadas nos números existentes (75%)
-   - Tipo C: Combinações com números novos (25%)
-6. Faça download do arquivo com todos os jogos
+_(Se possível, inclua um GIF ou imagem da aplicação funcionando)_
 
-## 🎯 Regras de Distribuição
+## 🎮 Como Usar
 
-O sistema gera combinações seguindo regras específicas para aumentar as chances:
+1. **Prepare seus Jogos de Referência**
+   ```
+   01 02 03 04 05 06 (Nome)
+   07 08 09 10 11 12 (Outro Nome)
+   ```
 
-- Entre 2 e 4 números baixos (1-30)
-- Entre 2 e 4 números altos (31-60)
-- Máximo de 3 números na mesma dezena
-- Máximo de 2 números com a mesma terminação
+2. **Cole os Jogos**
+   - Cole seus jogos no campo de texto
+   - Clique em "Processar Dados"
 
-## 💻 Tecnologias Utilizadas
+3. **Escolha o Multiplicador**
+   - Selecione de 1x a 5x para determinar quantos jogos serão gerados
 
-- [Python](https://www.python.org/) - Linguagem de programação
-- [Streamlit](https://streamlit.io/) - Framework web
-- Bibliotecas padrão do Python:
-  - Datetime - Manipulação de datas
-  - Random - Geração de números aleatórios
-  - Collections - Estruturas de dados avançadas
+4. **Veja os Resultados**
+   - Jogos Tipo A: Seus jogos originais
+   - Jogos Tipo B: Baseados nos seus números (75%)
+   - Jogos Tipo C: Explorando novos números (25%)
 
-## 📊 Estrutura do Projeto
+5. **Baixe as Combinações**
+   - Use o botão "Baixar Todos os Jogos"
+   - Arquivo gerado em formato texto simples
 
-```
-mega-sena-generator/
-├── MEGA.py              # Aplicação principal
-├── README.md            # Este arquivo de documentação
-└── .gitignore           # Arquivos ignorados pelo git
-```
+## 💻 Tecnologias
+
+- ![Python](https://img.shields.io/badge/-Python-14354C?style=flat&logo=python) **Python** - Linguagem principal
+- ![Streamlit](https://img.shields.io/badge/-Streamlit-FF4B4B?style=flat&logo=Streamlit&logoColor=white) **Streamlit** - Interface web
+- **Bibliotecas Principais**:
+  - `datetime`: Manipulação de datas
+  - `random`: Geração de números aleatórios
+  - `typing`: Tipagem estática
+  - `collections`: Estruturas de dados avançadas
 
 ## 🔍 Como Funciona
 
-O sistema divide a geração de jogos em três categorias:
+### Tipos de Jogos
 
 1. **Tipo A (Originais)**
-   - Mantém os jogos fornecidos pelos usuários
+   - Mantém seus jogos exatamente como fornecidos
+   - Serve como base para análise de padrões
 
-2. **Tipo B (75% dos jogos gerados)**
-   - Gera novas combinações usando apenas números dos jogos de referência
-   - Mantém padrões de distribuição dos jogos originais
+2. **Tipo B (75% dos Jogos)**
+   - Usa apenas números que apareceram nos jogos originais
+   - Mantém os padrões de distribuição encontrados
 
-3. **Tipo C (25% dos jogos gerados)**
-   - Explora números que não aparecem nos jogos de referência
+3. **Tipo C (25% dos Jogos)**
+   - Explora números que não apareceram nos jogos originais
    - Combina 1-2 números dos jogos originais com números novos
 
-## ⚠️ Limitações
+### Sistema de Validação
 
-- Aceita apenas o formato específico de entrada
-- Não persiste dados entre sessões
-- Não verifica duplicação entre jogos gerados
-- Interface limitada às funcionalidades do Streamlit
+- Verifica regras básicas da Mega-Sena
+- Aplica regras de distribuição personalizadas
+- Garante que não existam jogos duplicados
+- Controla a proporção entre números baixos e altos
 
 ## 🤝 Contribuindo
 
-1. Faça um Fork do projeto
-2. Crie sua Feature Branch (`git checkout -b feature/NovaFuncionalidade`)
-3. Faça commit das suas alterações (`git commit -m 'Adiciona nova funcionalidade'`)
-4. Faça Push para a Branch (`git push origin feature/NovaFuncionalidade`)
+1. Faça um Fork
+2. Crie sua Feature Branch (`git checkout -b feature/AmazingFeature`)
+3. Commit suas alterações (`git commit -m 'Add: nova funcionalidade'`)
+4. Push para a Branch (`git push origin feature/AmazingFeature`)
 5. Abra um Pull Request
 
-## 📝 Licença
+### Requisitos para Pull Requests
 
-Este projeto está sob a licença MIT - veja o arquivo [LICENSE.md](LICENSE.md) para detalhes.
+- Código documentado
+- Testes incluídos (quando aplicável)
+- Descrição clara das alterações
 
-## ✨ Agradecimentos
+## 📄 Licença
 
-- Aos usuários que ajudaram a testar e melhorar o sistema
-- À comunidade Python e Streamlit por ferramentas incríveis
-- A todos que contribuíram com sugestões e melhorias
+Este projeto está sob a licença MIT. Veja o arquivo [LICENSE](LICENSE) para mais detalhes.
+
+## 📫 Contato
+
+Chrystiano - [@Chrystiano](https://github.com/Chrystiano)
+
+Link do Projeto: [https://github.com/Chrystiano/mega-sena-generator](https://github.com/Chrystiano/mega-sena-generator)
 
 ---
-⌨️ com ❤️ por [Chrystiano](https://github.com/Chrystiano) 😊
+
+⌨️ com 💙 por [Chrystiano](https://github.com/Chrystiano)
